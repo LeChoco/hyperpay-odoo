@@ -19,7 +19,7 @@
     <record id="payment_provider_tree_hyperpay" model="ir.ui.view">
         <field name="name">payment.provider.tree.hyperpay</field>
         <field name="model">payment.provider</field>
-        <field name="inherit_id" ref="payment.payment_provider_tree"/>
+        <field name="inherit_id" ref="payment.view_payment_provider_tree"/>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='code']" position="after">
                 <field name="hyperpay_entity_id" optional="show"/>
@@ -44,7 +44,7 @@
     <record id="payment_transaction_tree_hyperpay" model="ir.ui.view">
         <field name="name">payment.transaction.tree.hyperpay</field>
         <field name="model">payment.transaction</field>
-        <field name="inherit_id" ref="payment.payment_transaction_tree"/>
+        <field name="inherit_id" ref="payment.view_payment_transaction_tree"/>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='provider_id']" position="after">
                 <field name="hyperpay_payment_id" optional="show"/>
