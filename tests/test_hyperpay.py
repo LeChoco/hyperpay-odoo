@@ -8,7 +8,7 @@ from odoo.exceptions import UserError, ValidationError
 
 
 class TestHyperpayPayment(TransactionCase):
-    """Test Hyperpay payment provider functionality (using COPYandPAY method)."""
+    """Test Hyperpay payment provider functionality."""
 
     def setUp(self):
         super().setUp()
@@ -53,7 +53,36 @@ class TestHyperpayPayment(TransactionCase):
             self.provider.hyperpay_entity_id = False
             self.provider._check_required_fields()
 
-    @patch('requests.post')
+    def test_get_tx_from_notification_data(self):
+        """Test that the transaction can be found from notification data."""
+        # Create a test transaction
+        transaction = self.env['payment.transaction'].create({
+            'reference': 'TEST_REF_002',
+            'amount': 100.0,
+            'currency_id': self.currency.id,
+            'partner_id': self.partner.id,
+            'provider_id': self.provider.id,
+        })
+
+        # Test with reference
+        data_with_ref = {'reference': 'TEST_REF_002'}
+        tx = self.env['payment.transaction']._hyperpay_get_tx_from_notification_data(data_with_ref)
+        self.assertEqual(tx, transaction)
+
+        # Test with merchantTransactionId
+        data_with_merch_id = {'merchantTransactionId': 'TEST_REF_002'}
+        tx = self.env['payment.transaction']._hyperpay_get_tx_from_notification_data(data_with_merch_id)
+        self.assertEqual(tx, transaction)
+
+        # Test with missing reference
+        with self.assertRaises(ValidationError):
+            self.env['payment.transaction']._hyperpay_get_tx_from_notification_data({})
+
+        # Test with non-existing reference
+        with self.assertRaises(ValidationError):
+            self.env['payment.transaction']._hyperpay_get_tx_from_notification_data({'reference': 'FAKE_REF'})
+
+    @patch('odoo.addons.payment_hyperpay.models.payment_provider.requests.post')
     def test_make_request_success(self, mock_post):
         """Test successful API request."""
         mock_response = MagicMock()
@@ -67,18 +96,18 @@ class TestHyperpayPayment(TransactionCase):
         mock_response.raise_for_status.return_value = None
         mock_post.return_value = mock_response
         
-        result = self.provider._copyandpay_make_request('v1/checkouts', {'test': 'data'})
+        result = self.provider._hyperpay_make_request('v1/checkouts', {'test': 'data'})
         
         self.assertEqual(result['result']['code'], '000.200.000')
         self.assertEqual(result['id'], 'test_checkout_id')
 
-    @patch('requests.post')
+    @patch('odoo.addons.payment_hyperpay.models.payment_provider.requests.post')
     def test_make_request_failure(self, mock_post):
         """Test failed API request."""
         mock_post.side_effect = Exception('Connection error')
         
         with self.assertRaises(UserError):
-            self.provider._copyandpay_make_request('v1/checkouts', {'test': 'data'})
+            self.provider._hyperpay_make_request('v1/checkouts', {'test': 'data'})
 
     def test_get_specific_rendering_values(self):
         """Test rendering values generation."""
@@ -91,7 +120,7 @@ class TestHyperpayPayment(TransactionCase):
             'provider_id': self.provider.id,
         })
         
-        with patch.object(self.provider, '_copyandpay_make_request') as mock_request:
+        with patch.object(self.provider, '_hyperpay_make_request') as mock_request:
             mock_request.return_value = {
                 'result': {'code': '000.200.000'},
                 'id': 'test_checkout_id'
@@ -119,7 +148,7 @@ class TestHyperpayPayment(TransactionCase):
             'resourcePath': '/v1/checkouts/test_id/payment'
         }
         
-        with patch.object(transaction, '_copyandpay_get_payment_status') as mock_status:
+        with patch.object(transaction, '_hyperpay_get_payment_status') as mock_status:
             mock_status.return_value = {
                 'result': {'code': '000.100.110'},
                 'id': 'test_payment_id',
@@ -127,7 +156,7 @@ class TestHyperpayPayment(TransactionCase):
                 'paymentType': 'DB'
             }
             
-            transaction._process_feedback_data(test_data)
+            transaction._handle_notification_data(test_data)
             
             self.assertEqual(transaction.state, 'done')
             self.assertEqual(transaction.hyperpay_payment_id, 'test_payment_id')
@@ -147,7 +176,7 @@ class TestHyperpayPayment(TransactionCase):
         test_data = {}  # Missing resourcePath
         
         with self.assertRaises(ValidationError):
-            transaction._process_feedback_data(test_data)
+            transaction._handle_notification_data(test_data)
 
     def test_payment_status_handling(self):
         """Test different payment status codes."""
@@ -164,7 +193,7 @@ class TestHyperpayPayment(TransactionCase):
             'result': {'code': '000.100.110'},
             'id': 'test_payment_id'
         }
-        transaction._handle_copyandpay_payment_status(success_status)
+        transaction._hyperpay_handle_payment_status(success_status)
         self.assertEqual(transaction.state, 'done')
         
         # Test pending status
@@ -173,7 +202,7 @@ class TestHyperpayPayment(TransactionCase):
             'result': {'code': '800.400.500'},
             'id': 'test_payment_id'
         }
-        transaction._handle_copyandpay_payment_status(pending_status)
+        transaction._hyperpay_handle_payment_status(pending_status)
         self.assertEqual(transaction.state, 'pending')
         
         # Test failed status
@@ -182,7 +211,7 @@ class TestHyperpayPayment(TransactionCase):
             'result': {'code': '800.400.503'},
             'id': 'test_payment_id'
         }
-        transaction._handle_copyandpay_payment_status(failed_status)
+        transaction._hyperpay_handle_payment_status(failed_status)
         self.assertEqual(transaction.state, 'cancel')
 
     def test_get_return_url(self):
