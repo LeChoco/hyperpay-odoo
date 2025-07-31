@@ -15,48 +15,45 @@ class PaymentTransaction(models.Model):
 
     #=== BUSINESS METHODS ===#
 
-    def _get_specific_api_values(self, processing_values):
-        """ Override of `payment` to return Hyperpay-specific API values.
-        
-        Note: self.ensure_one() from base method
-        :param dict processing_values: The processing values of the transaction
-        :return: The API values
-        :rtype: dict
+    @api.model
+    def _hyperpay_get_tx_from_notification_data(self, notification_data):
+        """ Find the transaction based on the notification data.
+
+        :param dict notification_data: The notification data
+        :return: The transaction
+        :rtype: recordset of `payment.transaction`
         """
-        res = super()._get_specific_api_values(processing_values)
-        if self.provider_code != 'hyperpay':
-            return res
+        reference = notification_data.get('reference') or notification_data.get('merchantTransactionId')
+        if not reference:
+            raise ValidationError(
+                "Hyperpay: " + _("Received notification with missing reference.")
+            )
 
-        return {
-            'checkout_id': processing_values['checkout_id'],
-            'base_url': processing_values['base_url'],
-            'integrity': processing_values['integrity'],
-            'shopper_result_url': processing_values['shopper_result_url'],
-        }
+        tx = self.search([('reference', '=', reference), ('provider_code', '=', 'hyperpay')])
+        if not tx:
+            raise ValidationError(
+                "Hyperpay: " + _("No transaction found for reference %s.", reference)
+            )
+        return tx
 
-    def _process_feedback_data(self, data):
-        """ Override of `payment` to process the transaction based on Hyperpay data.
+    def _process_notification_data(self, notification_data):
+        """ Process the transaction based on Hyperpay data.
         
-        Note: self.ensure_one() from base method
-        :param dict data: The feedback data
+        :param dict notification_data: The notification data
         """
-        super()._process_feedback_data(data)
         if self.provider_code != 'hyperpay':
-            return
+            return super()._process_notification_data(notification_data)
 
-        # Extract the resource path from the data
-        resource_path = data.get('resourcePath')
-        if not resource_path:
-            raise ValidationError(_("Hyperpay: received data with missing resourcePath"))
+        resource_path = notification_data.get('resourcePath')
+        if resource_path:
+            payment_status = self._hyperpay_get_payment_status(resource_path)
+            self._hyperpay_handle_payment_status(payment_status)
+        else:
+            # Direct webhook notification, data is the payment status
+            self._hyperpay_handle_payment_status(notification_data)
 
-        # Get the payment status from Hyperpay (using COPYandPAY method)
-        payment_status = self._copyandpay_get_payment_status(resource_path)
-        
-        # Update the transaction based on the payment status
-        self._handle_copyandpay_payment_status(payment_status)
-
-    def _copyandpay_get_payment_status(self, resource_path):
-        """ Get the payment status from Hyperpay API (using COPYandPAY method).
+    def _hyperpay_get_payment_status(self, resource_path):
+        """ Get the payment status from Hyperpay API.
         
         :param str resource_path: The resource path from the callback
         :return: The payment status response
@@ -70,14 +67,14 @@ class PaymentTransaction(models.Model):
         }
         
         # Make the request to get payment status
-        return self.provider_id._copyandpay_make_request(
-            resource_path.lstrip('/'), 
-            payload=params, 
+        return self.provider_id._hyperpay_make_request(
+            resource_path.lstrip('/'),
+            payload=params,
             method='GET'
         )
 
-    def _handle_copyandpay_payment_status(self, payment_status):
-        """ Handle the payment status response from Hyperpay (using COPYandPAY method).
+    def _hyperpay_handle_payment_status(self, payment_status):
+        """ Handle the payment status response from Hyperpay.
         
         :param dict payment_status: The payment status response
         """
@@ -88,6 +85,10 @@ class PaymentTransaction(models.Model):
         # Extract the result information
         result = payment_status.get('result', {})
         result_code = result.get('code')
+
+        if not result_code:
+            raise ValidationError("Hyperpay: Received notification with no result code.")
+
         result_description = result.get('description', '')
         
         # Map Hyperpay result codes to Odoo transaction states
@@ -126,7 +127,7 @@ class PaymentTransaction(models.Model):
     hyperpay_payment_id = fields.Char(
         string="Hyperpay Payment ID",
         readonly=True,
-        help="The payment ID returned by Hyperpay (COPYandPAY method)"
+        help="The payment ID returned by Hyperpay"
     )
     hyperpay_brand = fields.Char(
         string="Hyperpay Brand",

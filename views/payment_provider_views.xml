@@ -5,20 +5,18 @@
         <field name="model">payment.provider</field>
         <field name="inherit_id" ref="payment.payment_provider_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//field[@name='code']" position="after">
-                <field name="hyperpay_entity_id" 
-                       attrs="{'required': [('code', '=', 'hyperpay')]}"
-                       placeholder="8ac7a4c79394bdc801939736f17e063d"/>
-                <field name="hyperpay_access_token" 
-                       password="True"
-                       attrs="{'required': [('code', '=', 'hyperpay')]}"
-                       placeholder="OGFjN2E0Yzc5Mzk0YmRjODAxOTM5NzM2ZjFhNzA2NDF8enlac1lYckc4QXk6bjYzI1NHNng="/>
-                <field name="hyperpay_base_url" 
-                       attrs="{'required': [('code', '=', 'hyperpay')]}"
-                       placeholder="https://eu-test.oppwa.com/"/>
-                <field name="hyperpay_integrity_key" 
-                       password="True"
-                       placeholder="Integrity key for payment form validation"/>
+            <xpath expr="//group[@name='provider_credentials']" position="inside">
+                <group attrs="{'invisible': [('code', '!=', 'hyperpay')]}">
+                    <field name="hyperpay_entity_id"
+                           attrs="{'required': [('code', '=', 'hyperpay')]}"/>
+                    <field name="hyperpay_access_token"
+                           password="True"
+                           attrs="{'required': [('code', '=', 'hyperpay')]}"/>
+                    <field name="hyperpay_base_url"
+                           attrs="{'required': [('code', '=', 'hyperpay')]}"/>
+                    <field name="hyperpay_integrity_key"
+                           password="True"/>
+                </group>
             </xpath>
         </field>
     </record>

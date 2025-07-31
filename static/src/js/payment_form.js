@@ -11,7 +11,7 @@ PaymentForm.include({
             return super._processPayment(processingValues);
         }
 
-        // For Hyperpay (using COPYandPAY method), we redirect to their payment page
+        // For Hyperpay, we redirect to their payment page
         const checkoutId = processingValues.checkout_id;
         const baseUrl = processingValues.base_url;
         const integrity = processingValues.integrity;
@@ -22,14 +22,14 @@ PaymentForm.include({
     },
 
     /**
-     * Create the Hyperpay payment widget (using COPYandPAY method)
+     * Create the Hyperpay payment widget.
      * @param {string} checkoutId - The checkout ID from Hyperpay
      * @param {string} baseUrl - The base URL for Hyperpay
      * @param {string} integrity - The integrity key
      * @param {string} shopperResultUrl - The return URL
      */
     _createHyperpayWidget(checkoutId, baseUrl, integrity, shopperResultUrl) {
-        // Load the Hyperpay payment widget script (using COPYandPAY method)
+        // Load the Hyperpay payment widget script
         const script = document.createElement('script');
         script.src = `${baseUrl}/v1/paymentWidgets.js?checkoutId=${checkoutId}`;
         script.integrity = integrity;

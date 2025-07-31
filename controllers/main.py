@@ -19,19 +19,13 @@ class HyperpayController(http.Controller):
     def hyperpay_return(self, **data):
         """ Process the notification data sent by Hyperpay after redirection from payment.
         
-        Customers go through this route after completing the payment on Hyperpay (using COPYandPAY method).
-        
         :param dict data: The notification data, including the reference appended to the URL
         """
         _logger.info("Hyperpay return with data:\n%s", pprint.pformat(data))
         
-        # Retrieve the transaction based on the reference included in the return url
-        tx_sudo = request.env['payment.transaction'].sudo()._get_tx_from_notification_data(
-            'hyperpay', data
-        )
-        
-        # Handle the notification data
-        tx_sudo._handle_notification_data('hyperpay', data)
+        # Retrieve the transaction and handle the notification data
+        tx_sudo = request.env['payment.transaction'].sudo()._get_tx_from_notification_data('hyperpay', data)
+        tx_sudo._handle_notification_data(data)
         
         # Redirect the user to the status page
         return request.redirect('/payment/status')
@@ -40,8 +34,6 @@ class HyperpayController(http.Controller):
     def hyperpay_webhook(self):
         """ Process the notification data sent by Hyperpay to the webhook.
         
-        This route handles server-to-server notifications from Hyperpay (using COPYandPAY method).
-        
         :return: An empty string to acknowledge the notification
         :rtype: str
         """
@@ -49,31 +41,12 @@ class HyperpayController(http.Controller):
         _logger.info("Hyperpay webhook received with data:\n%s", pprint.pformat(data))
         
         try:
-            # Extract the transaction reference from the webhook data
-            # The exact structure depends on Hyperpay's webhook format
-            reference = data.get('merchantTransactionId') or data.get('reference')
-            
-            if not reference:
-                _logger.error("Hyperpay webhook: missing transaction reference")
-                raise ValidationError(_("Hyperpay: received webhook with missing transaction reference"))
-            
-            # Retrieve the transaction
-            tx_sudo = request.env['payment.transaction'].sudo().search([
-                ('reference', '=', reference),
-                ('provider_code', '=', 'hyperpay')
-            ], limit=1)
-            
-            if not tx_sudo:
-                _logger.error("Hyperpay webhook: transaction not found for reference %s", reference)
-                raise ValidationError(_("Hyperpay: transaction not found for reference %s", reference))
-            
-            # Process the webhook data
-            tx_sudo._handle_notification_data('hyperpay', data)
-            
+            # Retrieve the transaction and handle the notification data
+            tx_sudo = request.env['payment.transaction'].sudo()._get_tx_from_notification_data('hyperpay', data)
+            tx_sudo._handle_notification_data(data)
             return 'OK'
-            
-        except Exception as error:
-            _logger.error("Hyperpay webhook processing failed: %s", error)
+        except ValidationError:
+            _logger.exception("Could not retrieve transaction for Hyperpay notification.")
             raise Forbidden()
 
     @http.route('/payment/hyperpay/status', type='http', methods=['GET'], auth='public')
