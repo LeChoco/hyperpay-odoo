@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <template id="payment_form_hyperpay" name="Hyperpay Payment Form" inherit_id="payment.payment_form">
+    <template id="payment_form_hyperpay" name="Hyperpay Payment Form" inherit_id="payment.form">
         <xpath expr="//form[@id='o_payment_form']" position="replace">
             <form t-if="provider.code == 'hyperpay'" t-att-action="shopper_result_url" class="payment_hyperpay_form paymentWidgets" t-att-data-brands="provider.hyperpay_available_brands or 'VISA MASTER AMEX'">
                 <script t-attf-src="{{ base_url }}/v1/paymentWidgets.js?checkoutId={{ checkout_id }}" t-att-integrity="integrity" crossorigin="anonymous"/>
