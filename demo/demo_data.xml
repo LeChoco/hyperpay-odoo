@@ -9,12 +9,10 @@
         </record>
 
         <!-- Demo Currency -->
-<record id="demo_currency_eur" model="res.currency">
-    <field name="name">EUR</field>
-    <field name="symbol">€</field>
-    <field name="position">after</field>
+<!-- Use this instead -->
+<record id="demo_currency_eur" model="res.currency" noupdate="1">
+    <field name="id" eval="ref('base.EUR')"/>
 </record>
-
 
         <!-- Demo Payment Transaction -->
         <record id="demo_transaction_hyperpay" model="payment.transaction">
