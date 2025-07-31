@@ -9,7 +9,6 @@
         </record>
 
         <!-- Demo Currency -->
-        <record id="demo_currency_eur" model="res.currency">
             <field name="name">EUR</field>
             <field name="symbol">€</field>
             <field name="position">after</field>
