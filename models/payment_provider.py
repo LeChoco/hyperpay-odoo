@@ -39,9 +39,9 @@ class PaymentProvider(models.Model):
 
     #=== BUSINESS METHODS ===#
 
-    def _copyandpay_make_request(self, endpoint, payload=None, method='POST'):
-        """ Make a request to the Hyperpay API (using COPYandPAY method).
-        
+    def _hyperpay_make_request(self, endpoint, payload=None, method='POST'):
+        """ Make a request to the Hyperpay API.
+
         :param str endpoint: The API endpoint to call
         :param dict payload: The payload to send
         :param str method: The HTTP method to use
@@ -95,7 +95,7 @@ class PaymentProvider(models.Model):
         }
 
         # Make the checkout request
-        checkout_response = self._copyandpay_make_request('v1/checkouts', checkout_data)
+        checkout_response = self._hyperpay_make_request('v1/checkouts', checkout_data)
         
         if checkout_response.get('result', {}).get('code') != '000.200.000':
             error_msg = checkout_response.get('result', {}).get('description', 'Unknown error')
