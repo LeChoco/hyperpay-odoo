@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <template id="payment_form_hyperpay" name="Hyperpay Payment Form" inherit_id="payment.payment_form">
-        <xpath expr="//form" position="replace">
+        <xpath expr="//form[@id='o_payment_form']" position="replace">
             <form t-if="provider.code == 'hyperpay'" t-att-action="shopper_result_url" class="payment_hyperpay_form paymentWidgets" t-att-data-brands="provider.hyperpay_available_brands or 'VISA MASTER AMEX'">
                 <script t-attf-src="{{ base_url }}/v1/paymentWidgets.js?checkoutId={{ checkout_id }}" t-att-integrity="integrity" crossorigin="anonymous"/>
             </form>
-            <form t-else="" t-att-action="provider and provider._get_return_url(transaction) or ''" method="post">
+            <form t-else="" id="o_payment_form" class="o_payment_form" t-att-data-mode="mode" t-att-data-reference-prefix="reference_prefix" t-att-data-amount="amount" t-att-data-currency-id="currency and currency.id" t-att-data-partner-id="partner_id" t-att-data-transaction-route="transaction_route" t-att-data-assign-token-route="assign_token_route" t-att-data-landing-route="landing_route" t-att-data-access-token="access_token" method="post">
                 <t t-call="payment.payment_form_details"/>
                 <div class="mt-3">
                     <button type="submit" class="btn btn-primary">Pay Now</button>
