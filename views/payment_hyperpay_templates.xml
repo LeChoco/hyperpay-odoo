@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <template id="payment_form_hyperpay" name="Hyperpay Payment Form" inherit_id="payment.payment_form">
+    <template id="payment_form_hyperpay" name="Hyperpay Payment Form" inherit_id="payment.form">
         <xpath expr="//div[hasclass('o_payment_form')]" position="inside">
             <div t-if="provider.code == 'hyperpay'" class="hyperpay_payment_widget">
                 <script t-attf-src="{{ base_url }}/v1/paymentWidgets.js?checkoutId={{ checkout_id }}" t-att-integrity="integrity" crossorigin="anonymous"/>
