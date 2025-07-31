@@ -7,7 +7,7 @@
     'sequence': 350,
     'summary': "A payment provider for Hyperpay integration using COPYandPAY method.",
     'description': " ",
-    'depends': ['payment'],
+    'depends': ['payment', 'web', 'website'],
     'data': [
         'security/ir.model.access.csv',
         'views/payment_provider_views.xml',
