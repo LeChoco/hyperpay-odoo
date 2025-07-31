@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="payment_hyperpay_form" name="Hyperpay payment form" inherit_id="payment.payment_form">
+        <xpath expr="//form[@t-att-data-action-url='provider._get_return_url(transaction)']" position="replace">
+            <form t-att-data-action-url="provider._get_return_url(transaction)" class="payment_hyperpay_form">
+                <!-- Hyperpay Payment Widget (using COPYandPAY method) -->
+                <div class="hyperpay_payment_widget">
+                    <script t-att-src="'%s/v1/paymentWidgets.js?checkoutId=%s'" 
+                            t-att-integrity="integrity" 
+                            crossorigin="anonymous">
+                    </script>
+                    <form t-att-action="shopper_result_url" 
+                          class="paymentWidgets" 
+                          data-brands="VISA MASTER AMEX">
+                    </form>
+                </div>
+                
+                <!-- Hidden fields for transaction data -->
+                <input type="hidden" name="reference" t-att-value="transaction.reference"/>
+                <input type="hidden" name="amount" t-att-value="transaction.amount"/>
+                <input type="hidden" name="currency" t-att-value="transaction.currency_id.name"/>
+                
+                <!-- Submit button -->
+                <div class="text-center mt-3">
+                    <button type="submit" class="btn btn-primary">
+                        Pay with Hyperpay
+                    </button>
+                </div>
+            </form>
+        </xpath>
+    </template>
+
+    <!-- Hyperpay Payment Widget JavaScript -->
+    <template id="payment_hyperpay_assets" name="Hyperpay payment assets">
+        <script type="text/javascript">
+            // Hyperpay Payment Widget Initialization (using COPYandPAY method)
+            document.addEventListener('DOMContentLoaded', function() {
+                // Initialize Hyperpay payment widget
+                if (typeof window.COPYandPAY !== 'undefined') {
+                    window.COPYandPAY.init();
+                }
+                
+                // Handle payment form submission
+                const paymentForm = document.querySelector('.payment_hyperpay_form');
+                if (paymentForm) {
+                    paymentForm.addEventListener('submit', function(e) {
+                        // Prevent default form submission
+                        e.preventDefault();
+                        
+                        // Get the payment widget form
+                        const widgetForm = document.querySelector('.paymentWidgets');
+                        if (widgetForm) {
+                            // Submit the payment widget form
+                            widgetForm.submit();
+                        }
+                    });
+                }
+            });
+            
+            // Handle payment completion
+            function handlePaymentCompletion(result) {
+                console.log('Payment completed:', result);
+                
+                // Redirect to the return URL
+                const returnUrl = document.querySelector('input[name="return_url"]').value;
+                if (returnUrl) {
+                    window.location.href = returnUrl;
+                }
+            }
+        </script>
+    </template>
+
+    <!-- Hyperpay Payment Status Template -->
+    <template id="payment_hyperpay_status" name="Hyperpay payment status">
+        <div class="hyperpay_payment_status">
+            <div class="alert" t-att-class="{
+                'alert-success': transaction.state == 'done',
+                'alert-warning': transaction.state == 'pending',
+                'alert-danger': transaction.state == 'cancel'
+            }">
+                <h4 class="alert-heading">
+                    <t t-if="transaction.state == 'done'">Payment Successful</t>
+                    <t t-elif="transaction.state == 'pending'">Payment Pending</t>
+                    <t t-else="">Payment Failed</t>
+                </h4>
+                <p>
+                    <t t-if="transaction.state == 'done'">
+                        Your payment has been processed successfully. Transaction ID: 
+                        <strong t-field="transaction.hyperpay_payment_id"/>
+                    </t>
+                    <t t-elif="transaction.state == 'pending'">
+                        Your payment is being processed. Please wait for confirmation.
+                    </t>
+                    <t t-else="">
+                        Your payment could not be processed. Please try again.
+                    </t>
+                </p>
+                <t t-if="transaction.hyperpay_brand">
+                    <p>Payment Method: <strong t-field="transaction.hyperpay_brand"/></p>
+                </t>
+            </div>
+        </div>
+    </template>
+</odoo> 

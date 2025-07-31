@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_payment_provider_copyandpay,payment.provider.copyandpay,model_payment_provider,account.group_account_user,1,1,1,1
+access_payment_transaction_copyandpay,payment.transaction.copyandpay,model_payment_transaction,account.group_account_user,1,1,1,1 

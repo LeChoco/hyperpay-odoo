@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Demo Partner -->
+        <record id="demo_partner_hyperpay" model="res.partner">
+            <field name="name">Demo Customer</field>
+            <field name="email">demo@example.com</field>
+            <field name="phone">+1234567890</field>
+        </record>
+
+        <!-- Demo Currency -->
+        <record id="demo_currency_eur" model="res.currency">
+            <field name="name">EUR</field>
+            <field name="symbol">€</field>
+            <field name="position">after</field>
+        </record>
+
+        <!-- Demo Payment Transaction -->
+        <record id="demo_transaction_hyperpay" model="payment.transaction">
+            <field name="reference">DEMO_REF_001</field>
+            <field name="amount">50.00</field>
+            <field name="currency_id" ref="demo_currency_eur"/>
+            <field name="partner_id" ref="demo_partner_hyperpay"/>
+            <field name="provider_id" ref="payment_provider_hyperpay"/>
+            <field name="state">draft</field>
+            <field name="hyperpay_payment_id">demo_payment_123</field>
+            <field name="hyperpay_brand">VISA</field>
+            <field name="hyperpay_type">DB</field>
+        </record>
+
+        <!-- Demo Sale Order -->
+        <record id="demo_sale_order_hyperpay" model="sale.order">
+            <field name="name">DEMO/SO/001</field>
+            <field name="partner_id" ref="demo_partner_hyperpay"/>
+            <field name="date_order" eval="DateTime.now()"/>
+            <field name="amount_total">50.00</field>
+            <field name="currency_id" ref="demo_currency_eur"/>
+        </record>
+
+        <!-- Demo Payment Transaction for Sale Order -->
+        <record id="demo_transaction_sale_hyperpay" model="payment.transaction">
+            <field name="reference">DEMO_SALE_REF_001</field>
+            <field name="amount">50.00</field>
+            <field name="currency_id" ref="demo_currency_eur"/>
+            <field name="partner_id" ref="demo_partner_hyperpay"/>
+            <field name="provider_id" ref="payment_provider_hyperpay"/>
+            <field name="state">done</field>
+            <field name="hyperpay_payment_id">demo_sale_payment_456</field>
+            <field name="hyperpay_brand">MASTER</field>
+            <field name="hyperpay_type">DB</field>
+        </record>
+    </data>
+</odoo> 

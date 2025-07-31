@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="payment_provider_form_hyperpay" model="ir.ui.view">
+        <field name="name">payment.provider.form.hyperpay</field>
+        <field name="model">payment.provider</field>
+        <field name="inherit_id" ref="payment.payment_provider_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='code']" position="after">
+                <field name="hyperpay_entity_id" 
+                       attrs="{'required': [('code', '=', 'hyperpay')]}"
+                       placeholder="8ac7a4c79394bdc801939736f17e063d"/>
+                <field name="hyperpay_access_token" 
+                       password="True"
+                       attrs="{'required': [('code', '=', 'hyperpay')]}"
+                       placeholder="OGFjN2E0Yzc5Mzk0YmRjODAxOTM5NzM2ZjFhNzA2NDF8enlac1lYckc4QXk6bjYzI1NHNng="/>
+                <field name="hyperpay_base_url" 
+                       attrs="{'required': [('code', '=', 'hyperpay')]}"
+                       placeholder="https://eu-test.oppwa.com/"/>
+                <field name="hyperpay_integrity_key" 
+                       password="True"
+                       placeholder="Integrity key for payment form validation"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="payment_provider_tree_hyperpay" model="ir.ui.view">
+        <field name="name">payment.provider.tree.hyperpay</field>
+        <field name="model">payment.provider</field>
+        <field name="inherit_id" ref="payment.payment_provider_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='code']" position="after">
+                <field name="hyperpay_entity_id" optional="show"/>
+                <field name="hyperpay_base_url" optional="show"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="payment_transaction_form_hyperpay" model="ir.ui.view">
+        <field name="name">payment.transaction.form.hyperpay</field>
+        <field name="model">payment.transaction</field>
+        <field name="inherit_id" ref="payment.payment_transaction_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='provider_id']" position="after">
+                <field name="hyperpay_payment_id" readonly="1"/>
+                <field name="hyperpay_brand" readonly="1"/>
+                <field name="hyperpay_type" readonly="1"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="payment_transaction_tree_hyperpay" model="ir.ui.view">
+        <field name="name">payment.transaction.tree.hyperpay</field>
+        <field name="model">payment.transaction</field>
+        <field name="inherit_id" ref="payment.payment_transaction_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='provider_id']" position="after">
+                <field name="hyperpay_payment_id" optional="show"/>
+                <field name="hyperpay_brand" optional="show"/>
+                <field name="hyperpay_type" optional="show"/>
+            </xpath>
+        </field>
+    </record>
+</odoo> 
