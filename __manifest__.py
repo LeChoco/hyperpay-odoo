@@ -9,10 +9,11 @@
     'description': " ",
     'depends': ['payment'],
     'data': [
+        'security/ir.model.access.csv',
         'views/payment_provider_views.xml',
-        # 'views/payment_hyperpay_templates.xml',
-        # 'data/payment_provider_data.xml',
-        # 'demo/demo_data.xml',
+        'views/payment_hyperpay_templates.xml',
+        'data/payment_provider_data.xml',
+        'demo/demo_data.xml',
     ],
     'assets': {
         'web.assets_frontend': [
