@@ -14,9 +14,6 @@
         </xpath>
     </template>
 
-    <!-- This template is not needed as the logic is handled by static/src/js/payment_form.js -->
-    <template id="payment_hyperpay_assets" name="Hyperpay payment assets" inherit_id="web.assets_frontend">
-    </template>
 
     <!-- Hyperpay Payment Status Template -->
     <template id="payment_hyperpay_status" name="Hyperpay payment status">
